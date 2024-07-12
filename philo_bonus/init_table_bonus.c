@@ -6,7 +6,7 @@
 /*   By: trarijam <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 20:01:09 by trarijam          #+#    #+#             */
-/*   Updated: 2024/07/10 21:57:58 by trarijam         ###   ########.fr       */
+/*   Updated: 2024/07/12 14:59:41 by trarijam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,27 @@ static void	init_forks(t_table *table)
 		name_semaphore[6] = base;
 		name_semaphore[7] = '\0';	
 		table->forks[i] = sem_open(name_semaphore, O_CREAT | O_EXCL, 0644, 1);
+		if (table->forks[i] == SEM_FAILED)
+		{
+			sem_unlink(name_semaphore);
+			table->forks[i] = sem_open(name_semaphore, O_CREAT | O_EXCL, 0644, 1);
+		}
 		i++;
 		base++;
 	}
 	table->log = sem_open("/semaphore_log", O_CREAT | O_EXCL, 0644, 1);
 	if (table->log == SEM_FAILED)
-		return ;
-	table->waiter = sem_open("/waiter", O_CREAT | O_EXCL, 0644, table->nb_philos - 1);
-	if (table->waiter == SEM_FAILED)
-		return ;
+	{
+		sem_unlink("/semaphore_log");
+		table->log = sem_open("/semaphore_log", O_CREAT | O_EXCL, 0644, 1);
+
+	}
+	table->died = sem_open("/died", O_CREAT | O_EXCL, 0644, table->nb_philos - 1);
+	if (table->died == SEM_FAILED)
+	{
+		sem_unlink("/died");
+		table->died = sem_open("/died", O_CREAT | O_EXCL, 0644, table->nb_philos - 1);
+	}
 }
 
 static void	init_philo(t_table *table)
@@ -57,7 +69,9 @@ static void	init_philo(t_table *table)
 	{
 		table->philos[i].id = i + 1;
 		table->philos[i].meals_eaten = 0;
-		table->philos[i].last_meal_time = get_current_time();
+		table->philos[i].last_meal_time = table->start;
+		table->philos[i].table = table;
+		pthread_mutex_init(&table->philos[i].mutex_meal, NULL);
 		i++;
 	}
 }
@@ -73,9 +87,10 @@ int	init_table(int argc, char **argv, t_table *table)
 		table->nb_meals = ft_atol(argv[5]);
 	table->philo_died = 0;
 	table->start = get_current_time();
+	init_forks(table);
 	init_philo(table);
 	if (table->philos == NULL)
 			exit(0);
-	init_forks(table);
+	
 	return (1);
 }

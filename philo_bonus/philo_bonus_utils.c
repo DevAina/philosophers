@@ -6,13 +6,13 @@
 /*   By: trarijam <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 20:04:31 by trarijam          #+#    #+#             */
-/*   Updated: 2024/07/10 22:09:39 by trarijam         ###   ########.fr       */
+/*   Updated: 2024/07/12 15:11:39 by trarijam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-unsigned long long	get_current_time(void)
+long long	get_current_time(void)
 {
 	struct timeval tv;
 
@@ -47,7 +47,7 @@ long	ft_atol(char *str)
 
 void	print_status(t_table *table, int id, char *state)
 {
-	unsigned long long	current_time;
+	long long	current_time;
 
 	current_time = get_current_time() - table->start;
 	sem_wait(table->log);
@@ -70,11 +70,11 @@ void	clean_up(t_table *table)
 	name_semaphore[3] = 'r';
 	name_semaphore[4] = 'k';
 	name_semaphore[5] = '_';
-	while (i < table->nb_philos)
+	/*while (i < table->nb_philos)
 	{
 		waitpid(table->philos[i].pid, NULL, 0);
 		i++;	    
-	}
+	}*/
 	i = 0;
 	while (i < table->nb_philos)
 	{
@@ -88,7 +88,7 @@ void	clean_up(t_table *table)
 	free(table->forks);
 	sem_close(table->log);
 	sem_unlink("/semaphore_log");
-	sem_close(table->waiter);
-	sem_unlink("/waiter");
+	sem_close(table->died);
+	sem_unlink("/died");
 	free(table->philos);
 }
