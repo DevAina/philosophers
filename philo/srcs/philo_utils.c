@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: trarijam <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: trarijam <trarijam@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 11:16:00 by trarijam          #+#    #+#             */
-/*   Updated: 2024/07/09 15:31:07 by trarijam         ###   ########.fr       */
+/*   Updated: 2024/12/30 08:36:05 by trarijam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,18 @@ long long	get_current_time(void)
 void	print_status(t_table *table, int id, char *status)
 {
 	long long	now;
+	int			die;
 
 	now = get_current_time() - table->start;
 	pthread_mutex_lock(&table->write_mutex);
-	if (!table->someone_died)
-		printf("%lld %d %s\n", now, id, status);
+	die = table->someone_died;
 	pthread_mutex_unlock(&table->write_mutex);
+	if (die != 1)
+	{
+		pthread_mutex_lock(&table->mutex_print);
+		printf("%lld %d %s\n", now, id, status);
+		pthread_mutex_unlock(&table->mutex_print);
+	}
 }
 
 long	ft_atol(char *str)
@@ -86,6 +92,9 @@ void	clean_up(t_table *table)
 	}
 	if (table->philo)
 		free(table->philo);
+	if (table->state_forks)
+		free(table->state_forks);
+	pthread_mutex_destroy(&table->mutex_print);
 	pthread_mutex_destroy(&table->write_mutex);
 	pthread_mutex_destroy(&table->died_mutex);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: trarijam <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: trarijam <trarijam@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 11:16:10 by trarijam          #+#    #+#             */
-/*   Updated: 2024/07/09 15:19:48 by trarijam         ###   ########.fr       */
+/*   Updated: 2024/12/30 09:09:34 by trarijam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ typedef struct s_table	t_table;
 typedef struct s_philo
 {
 	int			id;
+	int			is_full;
 	pthread_t	thread;
 	t_table		*table;
 	int			left_fork;
@@ -48,6 +49,8 @@ struct s_table
 {
 	t_philo			*philo;
 	pthread_t		monitoring_death;
+	int				is_ready;
+	int				all_ate;
 	int				nb_philos;
 	int				time_to_die;
 	int				time_to_sleep;
@@ -55,7 +58,10 @@ struct s_table
 	int				nb_meals;
 	long long		start;
 	int				someone_died;
+	int				end_simulation;
+	int				*state_forks;
 	pthread_mutex_t	*forks;
+	pthread_mutex_t	mutex_print;
 	pthread_mutex_t	write_mutex;
 	pthread_mutex_t	died_mutex;
 };
@@ -77,6 +83,7 @@ void		*monitoring_death(void *arg);
 int			thread(t_table *table);
 
 /********fc for simulation*********/
+void		ph_sleep(long long time, t_table *table);
 int			check_dead(t_table *table);
 void		think(t_philo *philo);
 void		*routine(void *arg);
@@ -84,5 +91,6 @@ void		take_forks(t_philo *philo);
 void		eat(t_philo *philo);
 void		release_forks(t_philo *philo);
 void		ft_sleep(t_philo *philo);
+int 		is_ready(t_table *table);
 
 #endif
