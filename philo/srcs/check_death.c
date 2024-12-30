@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check_death.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: trarijam <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: trarijam <trarijam@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 13:46:23 by trarijam          #+#    #+#             */
-/*   Updated: 2024/07/09 15:31:31 by trarijam         ###   ########.fr       */
+/*   Updated: 2024/12/30 09:10:29 by trarijam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,16 @@ static int	check_if_philo_died(t_table *table, int index)
 	current_time = get_current_time();
 	pthread_mutex_lock(&table->died_mutex);
 	diff = current_time - table->philo[index].last_meal_time;
-	if ((diff > table->time_to_die) || (table->nb_meals != -1
-			&& table->philo[index].meals_eaten > table->nb_meals))
+	pthread_mutex_unlock(&table->died_mutex);
+	if (diff >= table->time_to_die)
 	{
 		block_of_code(table);
+		pthread_mutex_lock(&table->mutex_print);
 		printf("%lld %d %s\n", current_time - table->start,
 			table->philo->id, "died");
-		pthread_mutex_unlock(&table->died_mutex);
+		pthread_mutex_unlock(&table->mutex_print);
 		return (1);
 	}
-	pthread_mutex_unlock(&table->died_mutex);
 	return (0);
 }
 
@@ -46,8 +46,12 @@ void	*monitoring_death(void *arg)
 	int			i;
 
 	table = (t_table *)arg;
+	while (is_ready(table) == 0)
+		usleep(100);
+	table->start = get_current_time();
 	while (table->someone_died == 0)
 	{
+		usleep(10);
 		i = 0;
 		while (i < table->nb_philos)
 		{

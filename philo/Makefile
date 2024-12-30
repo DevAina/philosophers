@@ -1,6 +1,6 @@
 NAME = philo
 
-FLAGS = -Wall -Werror -Wextra -fsanitize=thread -g
+FLAGS = -Wall -Werror -Wextra -g
 
 SRCS = ./srcs/check_death.c ./srcs/init_table.c ./srcs/main.c \
 		./srcs/philo_utils.c ./srcs/simulation.c ./srcs/thread.c \
@@ -14,7 +14,7 @@ all: ${NAME}
 	cc ${FLAGS} -c $< -o ${<:.c=.o}
 
 ${NAME}: ${OBJS}
-	cc ${FLAGS} -o ${NAME} ${OBJS}
+	cc ${FLAGS} -lpthread -o ${NAME} ${OBJS}
 
 clean:
 	rm -f ${OBJS}
